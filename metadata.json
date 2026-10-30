@@ -1,0 +1,6 @@
+{
+  "name": "AudioText Studio - Generador de Audio desde Texto",
+  "description": "Convierte cualquier texto en audio natural con voces realistas de IA, control de tono, velocidad, descarga en WAV/MP3 y modos monólogo o diálogo.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
