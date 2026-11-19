@@ -1,7 +1,10 @@
 node_modules/
 build/
 dist/
+dist-electron/
+release/
 coverage/
+public/voices/
 .DS_Store
 *.log
 .env*
