@@ -50,7 +50,7 @@ Despliega la carpeta `dist`. La app es 100 % estática: no hay functions ni endp
 
 ## Voces
 
-El selector muestra todas las voces Piper disponibles (más de 120, priorizando español). En Electron puedes ampliar el catálogo descargando modelos adicionales; el texto nunca sale de la máquina.
+El selector muestra únicamente voces en español, con nombres sencillos: Daniel, Lucía, Alejandro, Claudia, Carlos, Marta y Pablo. Todas se generan localmente; en Electron puedes incluirlas dentro de la app con `npm run electron:build:offline`.
 
 ## Notas técnicas
 
