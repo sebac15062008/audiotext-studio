@@ -56,6 +56,6 @@ El selector muestra únicamente voces en español, con nombres sencillos: Daniel
 
 - Motor: [`@realtimex/piper-tts-web`](https://www.npmjs.com/package/@realtimex/piper-tts-web) + `onnxruntime-web` 1.22.
 - Fonemizador y datos eSpeak: `public/piper/`.
-- Salida: WAV mono; el resultado se muestra como forma de onda real con `wavesurfer.js`.
+- Salida: WAV mono; el resultado muestra la forma de onda real con `wavesurfer.js` y, al reproducir, una onda en vivo que se mueve con el audio (`AnalyserNode`).
 - Los archivos de voz se sirven desde `public/voices/` cuando están presentes; si no, se obtienen del repositorio estático de modelos y se guardan en la caché del navegador.
 - El proyecto no contiene código de servidor ni llamadas a APIs de terceros para sintetizar voz.

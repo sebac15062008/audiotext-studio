@@ -13,6 +13,7 @@ import {
   Sun,
 } from 'lucide-react';
 import WaveSurfer from 'wavesurfer.js';
+import LiveWave from './components/LiveWave';
 import { downloadBlob, formatTime, generateSpeech, type Progress } from './tts';
 import { getVoices, voiceName, voiceQualityLabel, voiceRegion, type Voice } from './voices';
 
@@ -42,6 +43,7 @@ export default function App() {
   const [progress, setProgress] = useState(0);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [waveformInstance, setWaveformInstance] = useState<WaveSurfer | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -136,6 +138,7 @@ export default function App() {
       dragToSeek: true,
     });
     wavesurferRef.current = wavesurfer;
+    setWaveformInstance(wavesurfer);
     wavesurfer.on('ready', (length) => setDuration(length));
     wavesurfer.on('timeupdate', (time) => setCurrentTime(time));
     wavesurfer.on('play', () => setIsPlaying(true));
@@ -144,6 +147,7 @@ export default function App() {
     return () => {
       wavesurfer.destroy();
       wavesurferRef.current = null;
+      setWaveformInstance(null);
     };
   }, [audioUrl, stage, dark]);
 
@@ -351,7 +355,10 @@ export default function App() {
                 </button>
               </div>
 
-              <div className="waveform" ref={waveformRef} />
+              <div className="waveform">
+                <div className="waveform__base" ref={waveformRef} />
+                <LiveWave wavesurfer={waveformInstance} playing={isPlaying} dark={dark} />
+              </div>
 
               <div className="player">
                 <button
