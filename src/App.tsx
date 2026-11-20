@@ -186,8 +186,8 @@ export default function App() {
       objectUrlRef.current = url;
       setProgress(100);
       setAudioBlob(blob);
+      await changeStage('result');
       setAudioUrl(url);
-      changeStage('result');
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'No se pudo generar el audio.');
       setProgress(0);

@@ -1,5 +1,7 @@
 # AudioText Studio
 
+![Vista previa de AudioText Studio](./imagen-del-proyecto.png)
+
 Convierte texto en audio con voces neuronales **Piper**. Sin API, sin servidor, sin subir tu texto: la inferencia ocurre en tu dispositivo con ONNX Runtime Web.
 
 Funciona en dos modes:
