@@ -7,9 +7,14 @@ type Props = {
   dark: boolean;
 };
 
-/** Onda en vivo dibujada con los datos del AnalyserNode del audio que se reproduce. */
+/** Única onda del resultado: se mueve con el audio y late suavemente en reposo. */
 export default function LiveWave({ wavesurfer, playing, dark }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const playingRef = useRef(playing);
+
+  useEffect(() => {
+    playingRef.current = playing;
+  }, [playing]);
 
   useEffect(() => {
     if (!wavesurfer) return;
@@ -44,10 +49,13 @@ export default function LiveWave({ wavesurfer, playing, dark }: Props) {
         if (ctx) {
           ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
           ctx.clearRect(0, 0, width, height);
-          analyser.getByteTimeDomainData(data);
 
+          const active = playingRef.current;
+          if (active) analyser.getByteTimeDomainData(data);
           const middle = height / 2;
-          const amplitude = height * 0.42;
+          const amplitude = height * (active ? 0.4 : 0.12);
+          const time = performance.now() / 1000;
+
           const gradient = ctx.createLinearGradient(0, 0, width, 0);
           gradient.addColorStop(0, dark ? '#2dd4bf' : '#0d9488');
           gradient.addColorStop(0.5, dark ? '#5eead4' : '#059669');
@@ -55,17 +63,25 @@ export default function LiveWave({ wavesurfer, playing, dark }: Props) {
 
           ctx.beginPath();
           for (let x = 0; x <= width; x += 2) {
-            const index = Math.floor((x / width) * (data.length - 1));
-            const value = (data[index] - 128) / 128;
+            let value: number;
+            if (active) {
+              const index = Math.floor((x / width) * (data.length - 1));
+              value = (data[index] - 128) / 128;
+            } else {
+              value =
+                Math.sin(x * 0.035 - time * 1.6) *
+                Math.sin(x * 0.006 + time * 0.7) *
+                0.55;
+            }
             const y = middle + value * amplitude;
             if (x === 0) ctx.moveTo(x, y);
             else ctx.lineTo(x, y);
           }
           ctx.strokeStyle = gradient;
-          ctx.lineWidth = 2.2;
+          ctx.lineWidth = active ? 2.4 : 1.8;
           ctx.lineJoin = 'round';
           ctx.shadowColor = dark ? '#2dd4bf' : '#0d9488';
-          ctx.shadowBlur = 10;
+          ctx.shadowBlur = active ? 12 : 6;
           ctx.stroke();
           ctx.shadowBlur = 0;
         }
@@ -83,11 +99,5 @@ export default function LiveWave({ wavesurfer, playing, dark }: Props) {
     };
   }, [wavesurfer, dark]);
 
-  return (
-    <canvas
-      ref={canvasRef}
-      className={`live-wave ${playing ? 'is-visible' : ''}`}
-      aria-hidden="true"
-    />
-  );
+  return <canvas ref={canvasRef} className="live-wave" aria-hidden="true" />;
 }

@@ -71,8 +71,10 @@ export async function preloadLocalManifest() {
   }
 }
 
-/** Fuerza una sesión nueva para cada voz (la librería reutiliza una instancia singleton). */
-function resetSession() {
+/** Sesiones ya inicializadas por voz: evita reconstruir el modelo en cada generación. */
+const sessionCache = new Map<string, TtsSession>();
+
+function resetSingleton() {
   (TtsSession as unknown as { _instance: TtsSession | null })._instance = null;
 }
 
@@ -82,7 +84,9 @@ export async function generateSpeech(
   onProgress?: (p: Progress) => void
 ): Promise<Blob> {
   patchModelFetch();
-  resetSession();
+
+  const cached = sessionCache.get(voiceId);
+  if (cached) return cached.predict(text);
 
   // ONNX Runtime usa workers cuando hay SharedArrayBuffer. Forzar 1 hilo evita
   // depender de cabeceras COOP/COEP tanto en Vercel como en Electron.
@@ -90,6 +94,7 @@ export async function generateSpeech(
   Object.defineProperty(navigator, 'hardwareConcurrency', { configurable: true, get: () => 1 });
 
   try {
+    resetSingleton();
     const session = await TtsSession.create({
       voiceId: voiceId as never,
       progress: onProgress,
@@ -100,6 +105,7 @@ export async function generateSpeech(
       },
       fallbackStrategy: 'local',
     });
+    sessionCache.set(voiceId, session);
     return await session.predict(text);
   } finally {
     if (descriptor) Object.defineProperty(navigator, 'hardwareConcurrency', descriptor);

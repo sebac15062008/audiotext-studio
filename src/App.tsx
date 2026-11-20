@@ -87,14 +87,19 @@ export default function App() {
     []
   );
 
-  const changeStage = useCallback((next: Stage) => {
-    if (timerRef.current) window.clearTimeout(timerRef.current);
-    setLeaving(true);
-    timerRef.current = window.setTimeout(() => {
-      setStage(next);
-      setLeaving(false);
-      timerRef.current = null;
-    }, 220);
+  /** Cambia de pantalla y espera a que la nueva se haya dibujado antes de
+   *  empezar el trabajo pesado, para que "Generando" aparezca al instante. */
+  const changeStage = useCallback((next: Stage): Promise<void> => {
+    return new Promise((resolve) => {
+      if (timerRef.current) window.clearTimeout(timerRef.current);
+      setLeaving(true);
+      timerRef.current = window.setTimeout(() => {
+        setStage(next);
+        setLeaving(false);
+        timerRef.current = null;
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+      }, 120);
+    });
   }, []);
 
   const selectedVoice = useMemo(
@@ -121,7 +126,7 @@ export default function App() {
   const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
 
   useEffect(() => {
-    if (stage !== 'result' || !audioUrl || !waveformRef.current) return;
+    if (!audioUrl || !waveformRef.current) return;
     const wavesurfer = WaveSurfer.create({
       container: waveformRef.current,
       url: audioUrl,
@@ -149,7 +154,7 @@ export default function App() {
       wavesurferRef.current = null;
       setWaveformInstance(null);
     };
-  }, [audioUrl, stage, dark]);
+  }, [audioUrl, dark]);
 
   const clearAudio = useCallback(() => {
     if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
@@ -168,8 +173,8 @@ export default function App() {
     }
     setError(null);
     setProgress(0);
+    await changeStage('generating');
     clearAudio();
-    changeStage('generating');
 
     try {
       const blob = await generateSpeech(text.trim(), voiceId, (event: Progress) => {
@@ -192,7 +197,6 @@ export default function App() {
 
   const handleRestart = () => {
     wavesurferRef.current?.pause();
-    clearAudio();
     setError(null);
     setProgress(0);
     changeStage('idle');
@@ -324,9 +328,9 @@ export default function App() {
         {stage === 'generating' && (
           <main className="stage">
             <div className="generation">
-              <div className="generation__bars" aria-hidden="true">
-                {Array.from({ length: 15 }).map((_, index) => (
-                  <span key={index} style={{ animationDelay: `${index * 0.09}s` }} />
+              <div className="gen-boxes" aria-hidden="true">
+                {Array.from({ length: 5 }).map((_, index) => (
+                  <span className="gen-box" key={index} />
                 ))}
               </div>
               <h2>Generando tu audio…</h2>
@@ -356,7 +360,7 @@ export default function App() {
               </div>
 
               <div className="waveform">
-                <div className="waveform__base" ref={waveformRef} />
+                <div className="waveform__engine" ref={waveformRef} />
                 <LiveWave wavesurfer={waveformInstance} playing={isPlaying} dark={dark} />
               </div>
 
