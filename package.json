@@ -20,7 +20,8 @@
     "lucide-react": "^0.546.0",
     "onnxruntime-web": "1.22.0",
     "react": "^19.0.1",
-    "react-dom": "^19.0.1"
+    "react-dom": "^19.0.1",
+    "wavesurfer.js": "^8.1.0"
   },
   "devDependencies": {
     "@types/react": "^19.3.0",
